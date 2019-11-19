@@ -11,11 +11,11 @@ def mse(imageA, imageB):
 	err /= float(imageA.shape[0] * imageA.shape[1])
 	return err
 
-def compare_image(imageA, imageB):
+def ssim(imageA, imageB):
     imageA_gray = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
     imageB_gray = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
     m = mse(imageA_gray, imageB_gray)
-    s = metrics.structural_similarity(imageA_gray, imageB_gray)
+    s = metrics.ssim(imageA_gray, imageB_gray)
     '''
     fig = plt.figure("Image Compare")
     plt.suptitle("MSE: %.2f, SSIM: %.2f" % (m, s))
@@ -32,7 +32,22 @@ def compare_image(imageA, imageB):
 	# show the images
     plt.show()
     '''
-    return m, s
+    return s
+
+def compareHist(imageA, imageB):
+    # Convert it to HSV
+    imga_hsv = cv2.cvtColor(imageB, cv2.COLOR_BGR2HSV)
+    imgb_hsv = cv2.cvtColor(imageA, cv2.COLOR_BGR2HSV)
+    
+    # Calculate the histogram and normalize it
+    hist_imga = cv2.calcHist([imga_hsv], [0,1], None, [180,256], [0,180,0,256])
+    cv2.normalize(hist_imga, hist_imga, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX);
+    hist_imgb = cv2.calcHist([imgb_hsv], [0,1], None, [180,256], [0,180,0,256])
+    cv2.normalize(hist_imgb, hist_imgb, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX);
+    
+    # find the metric value
+    metric_val = cv2.compareHist(hist_imga, hist_imgb, cv2.HISTCMP_CORREL)
+    return metric_val
 
 def main(dir, mins):
     outpath = dir + "../out/"
@@ -62,8 +77,8 @@ def main(dir, mins):
         if imb is None:
             raise Exception(f"{path2} not found.")
         
-        m, s = compare_image(ima, imb)
-        print(f"Structural similiarity between '{image}' and '{images[ind + 1]}' is: {s}")
+        s = compareHist(ima, imb)
+        print(f"'{image}' and '{images[ind + 1]}': \t s = {s}")
         # If not similar write unique frame to output directory
         if float(s) < mins:
             cv2.imwrite(outpath + images[ind + 1], imb)
