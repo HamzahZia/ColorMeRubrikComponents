@@ -1,3 +1,18 @@
+'''
+Usage: python ./imageComparer [image-directory] [minimum similarity required]
+
+Goes through directory of images, orders them in sequence based on frame number in name.
+    e.g. [kung fu hustle_1.mp4, kung fu hustle_2.mp4, kung fu hustle_3.mp4,...] 
+
+    For each frame, discards neighbouring subsequent frames that are at least minimum similarity
+    required similar. Note this value is between 0 and 1 (invlusive), I found 0.5 to be a desirable
+    value.
+
+Outputs reduced sample of frames to [image-directory]/../out
+
+Blog: https://colourmekubrikupdates.wordpress.com/2019/11/19/update-3-image-comparer/
+'''
+
 from skimage import metrics
 import numpy as np
 import cv2
@@ -104,6 +119,7 @@ def main(dir, minr):
         if len(filtered_images) == len(og_images):
             print(f"Discarded frames: {discarded_frames}")
             print(f"Iterations: {iterations}")
+            # Write frames to directory
             for im_name in filtered_images:
                 image = cv2.imread(dir + im_name)
                 cv2.imwrite(outpath + im_name, image)

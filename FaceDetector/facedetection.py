@@ -1,3 +1,15 @@
+'''
+Be sure to have latest versions of OpenCV and Dlib installed before running.
+
+Usage: `python facedetector.py <path-to-file>`. 
+
+File must be jpg or png.
+
+Output: Number of faces, fraction of frame made up of faces.
+
+Will save photo with boxes around faces in "faces/" directory.
+'''
+
 import cv2
 import dlib
 import os.path
@@ -6,8 +18,7 @@ import sys
 def detectfaces(path):
     filename, file_extension = os.path.splitext(path)
     filename = filename.split('/')[-1]
-    # print(filename)
-    # print(file_extension)
+    print(f"Processing {filename}{file_extension}...")
     
     dnnFaceDetector = dlib.cnn_face_detection_model_v1("mmod_human_face_detector.dat")
     
@@ -31,10 +42,13 @@ def detectfaces(path):
         # Rectangle around the face
         cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
 
+    frac = (faces_area / img_area)
+
     print(f"There is/are {count} face(s) in the frame.")
-    print(f"{int((faces_area / img_area)*100)}% of frame is made up of faces.")
+    print(f"{frac} of frame is made up of faces.")
 
     cv2.imwrite("faces/" + filename + file_extension, img)
+    return (count, frac)
 
 def main(path):
     detectfaces(path)
